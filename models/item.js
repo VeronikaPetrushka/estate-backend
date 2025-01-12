@@ -35,13 +35,12 @@ const itemSchema = new mongoose.Schema({
         required: false,
         default: null,
     },
-    image: {
-        type: String,
-        data:  Buffer,
-        embedded: true,
-        required: false,
-        default: null
-    },
+    // images: {
+    //     type: String,
+    //     embedded: true,
+    //     required: false,
+    //     default: null
+    // },
     favorite: {
         type: Boolean,
         required: false,

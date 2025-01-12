@@ -1,5 +1,6 @@
 import express from "express";
 import ItemsController from '../controllers/items.js';
+// import { uploadImages } from '../middleware/images.js'
 
 const router = express.Router();
 const jsonParser = express.json();

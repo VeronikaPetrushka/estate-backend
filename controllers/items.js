@@ -173,7 +173,7 @@ async function createItem(req, res, next) {
         location: req.body.location,
         size: req.body.size,
         favorite: req.body.favorite,
-        // image: req.file.filename
+        // images: req.files ? req.files.map(file => file.path) : []
     }
 
     try {
