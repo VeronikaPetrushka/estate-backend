@@ -1,4 +1,14 @@
+import path from 'path';
+import fs from 'fs/promises';
+import {Jimp} from 'jimp';
+import crypto from 'crypto';
+
 import Item from "../models/item.js"
+import CloudinaryUploadImage from "../helpers/cloudinary.js";
+import { isAccessible } from '../helpers/upload.js';
+import { createItemSchema } from '../models/item.js';
+
+const storeImage = path.join(process.cwd(), 'public', 'images');
 
 // FULL
 
@@ -160,29 +170,122 @@ async function getItemsFavorite(req, res, next) {
 
 };
 
+// UPLOAD IMAGE
+
+// const uploadImages = async (req, res, next) => {
+//     const { id } = req.params;
+//     console.log('Uploaded Files:', req.files);
+//     console.log('Request Body:', req.body);
+
+//     if (!id) {
+//         return res.status(400).json({ message: 'ID is required' });
+//     }
+
+//     try {
+//         const imageUrls = [];
+
+//         for (const file of req.files) {
+//             const { path: tempUpload, originalname } = file;
+//             const extension = path.extname(originalname);
+//             const filename = `${id}-${crypto.randomUUID()}${extension}`;
+//             const resultUpload = path.join('tmp', filename);
+
+//             await fs.rename(tempUpload, resultUpload);
+
+//             await Jimp.read(resultUpload)
+//             .then(image => {
+//                 image.cover(100, 100)
+//                     .quality(75)
+//                     .write(resultUpload);
+//             })
+//             .catch(err => {
+//                 console.error('Image processing error:', err);
+//                 fs.rm(resultUpload).catch(() => {});
+//                 next(err);
+//             });
+
+//             const imageUrl = await CloudinaryUploadImage(resultUpload);
+//             imageUrls.push(imageUrl);
+
+//             await fs.rm(resultUpload);
+//         }
+
+//         console.log('Image URLs:', imageUrls);
+
+//         const data = await Item.findByIdAndUpdate(id, { images: imageUrls }, { new: true });
+//         if (!data) {
+//             return res.status(404).json({ message: 'Item not found' });
+//         }
+
+//         return res.json({ images: imageUrls });
+
+//     } catch (error) {
+//         console.error('Error uploading images:', error);
+
+//         for (const file of req.files) {
+//             const filePath = file.path;
+//             if (await isAccessible(filePath)) {
+//                 await fs.rm(filePath);
+//             }
+//         }
+
+//         next(error);
+//     }
+// };
+
 // CREATE ITEM
 
-async function createItem(req, res, next) {
-
-    const item = {
-        name: req.body.name,
-        price: req.body.price,
-        description: req.body.description,
-        category: req.body.category,
-        subCategory: req.body.subCategory,
-        location: req.body.location,
-        size: req.body.size,
-        favorite: req.body.favorite,
-        // images: req.files ? req.files.map(file => file.path) : []
-    }
-
+const createItem = async (req, res, next) => {
     try {
-        const result = await Item.create(item);
-        res.status(201).send(result)
-    } catch (error) {
-        next(error)
-    }
+        const { error, value } = createItemSchema.validate(req.body, { abortEarly: false });
+        if (error) {
+            return res.status(400).json({ error: 'Validation Error', details: error.details });
+        }
 
+        let imageUrls = [];
+
+        if (req.files && req.files.length > 0) {
+            try {
+                for (const file of req.files) {
+                    const { path: tempPath, originalname } = file;
+                    const extension = path.extname(originalname);
+                    const filename = `${crypto.randomUUID()}${extension}`;
+                    const resultUpload = path.join('tmp', filename);
+
+                    await fs.rename(tempPath, resultUpload);
+
+                    // await Jimp.read(resultUpload)
+                    //     .then(image => {
+                    //         image.cover(100, 100)
+                    //             .quality(75)
+                    //             .write(resultUpload);
+                    //     })
+                    //     .catch(err => {
+                    //         console.error('Image processing error:', err);
+                    //         fs.rm(resultUpload).catch(() => {});
+                    //         throw new Error('Image processing failed');
+                    //     });
+
+                    const imageUrl = await CloudinaryUploadImage(resultUpload);
+                    imageUrls.push(imageUrl);
+
+                    await fs.rm(resultUpload);
+                }
+            } catch (uploadError) {
+                console.error('Image upload failed:', uploadError);
+                return res.status(500).json({ error: 'Failed to upload images', details: uploadError.message });
+            }
+        }
+
+        const itemData = { ...value, images: imageUrls };
+
+        const newItem = await Item.create(itemData);
+
+        res.status(201).json(newItem);
+    } catch (error) {
+        console.error('Error creating item:', error);
+        res.status(500).json({ error: 'Internal Server Error', details: error.message });
+    }
 };
 
 // UPDATE ITEM

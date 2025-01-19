@@ -1,11 +1,18 @@
 import express from "express";
 import morgan from "morgan";
 import cors from "cors";
+import path from "path";
 import "dotenv/config";
+
+// import { fileURLToPath } from 'url';
 
 import "./db.js";
 
 import routes from './routes/index.js';
+import { createFolderIsNotExist } from "./helpers/upload.js";
+
+const uploadDir = path.join(process.cwd(), 'tmp');
+const storeImage = path.join(process.cwd(), 'public', 'images');
 
 const app = express();
 
@@ -29,9 +36,19 @@ app.use(morgan("tiny"));
 
 app.use('/api', routes);
 
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
+
+// app.set("views", path.join(__dirname, "views"));
+// app.set("view engine", "ejs");
+
 app.use((_, res) => {
   res.status(404).json({ message: "Route not found" });
 });
+
+// app.get('/', (req, res) => {
+//   res.render("index");
+// })
 
 app.use((err, req, res, next) => {
   const { status = 500, message = "Server error" } = err;
@@ -42,6 +59,8 @@ const PORT = process.env.PORT || 8080;
 
 try {
   app.listen(PORT, () => {
+    createFolderIsNotExist(uploadDir);
+    createFolderIsNotExist(storeImage);
     console.log(`Server running on port ${PORT}`);
   });
 } catch (err) {

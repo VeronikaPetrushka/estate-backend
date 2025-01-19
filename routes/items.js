@@ -1,6 +1,6 @@
 import express from "express";
 import ItemsController from '../controllers/items.js';
-// import { uploadImages } from '../middleware/images.js'
+import {upload} from '../helpers/upload.js'
 
 const router = express.Router();
 const jsonParser = express.json();
@@ -17,7 +17,7 @@ router.get('/commercial/buy', ItemsController.getItemsToBuyCommercial);
 router.get('/commercial/rent', ItemsController.getItemsToRentCommercial);
 router.get('/favorite', ItemsController.getItemsFavorite);
 router.get('/:id', ItemsController.getItem);
-router.post('/', jsonParser, ItemsController.createItem);
+router.post('/', upload, ItemsController.createItem);
 router.put('/:id', jsonParser, ItemsController.updateItem);
 router.delete('/:id', ItemsController.deleteItem);
 
