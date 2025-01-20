@@ -4,8 +4,6 @@ import cors from "cors";
 import path from "path";
 import "dotenv/config";
 
-// import { fileURLToPath } from 'url';
-
 import "./db.js";
 
 import routes from './routes/index.js';
@@ -16,39 +14,33 @@ const storeImage = path.join(process.cwd(), 'public', 'images');
 
 const app = express();
 
-const allowedOrigins = ["http://localhost:5173"];
-const corsOptions = {
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://south-estate-web-front.vercel.app"
+];
+
+app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (allowedOrigins.includes(origin) || !origin) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
     }
   },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-};
-app.use(cors(corsOptions));
+  methods: "GET, POST, PUT, DELETE, OPTIONS",
+  allowedHeaders: "Content-Type, Authorization",
+}));
+
 
 app.use(express.json());
 app.use(morgan("tiny"));
 
 app.use('/api', routes);
 
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
-
-// app.set("views", path.join(__dirname, "views"));
-// app.set("view engine", "ejs");
-
 app.use((_, res) => {
   res.status(404).json({ message: "Route not found" });
 });
-
-// app.get('/', (req, res) => {
-//   res.render("index");
-// })
 
 app.use((err, req, res, next) => {
   const { status = 500, message = "Server error" } = err;
