@@ -5,10 +5,16 @@ import Joi from 'joi';
 export const createItemSchema = Joi.object({
     name: Joi.string().pattern(/^[A-Za-z0-9\s\-_,.;:()]+$/).required(),
     price: Joi.number().positive().required(),
+    currency: Joi.string().required(),
     description: Joi.string().allow(null, '').optional(),
     category: Joi.string().valid("Купити", "Орендувати", "Комерційне").required(),
     subCategory: Joi.string().valid("Будинки", "Квартири", "Купити", "Орендувати").allow(null, "").optional(),
-    location: Joi.string().required(),
+    height: Joi.string().required(),
+    floor: Joi.string().required(),
+    rooms: Joi.number().positive().required(),
+    city: Joi.string().required(),
+    district: Joi.string().required(),
+    address: Joi.string().required(),
     size: Joi.number().positive().allow(null).optional(),
     favorite: Joi.boolean().default(false).optional(),
     images: Joi.array().items(Joi.string().uri()).optional(),
@@ -24,6 +30,10 @@ const itemSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    currency: {
+        type: String,
+        required: true
+    },
     category: {
         type: String,
         required: true,
@@ -35,7 +45,27 @@ const itemSchema = new mongoose.Schema({
         default: null,
         enum: ["Будинки", "Квартири", "Купити", "Орендувати", "", null]
     },
-    location: {
+    rooms: {
+        type: Number,
+        required: true
+    },
+    floor: {
+        type: Number,
+        required: true
+    },
+    height: {
+        type: Number,
+        required: true
+    },
+    city: {
+        type: String,
+        required: true,
+    },
+    district: {
+        type: String,
+        required: true,
+    },
+    address: {
         type: String,
         required: true,
     },
