@@ -9,6 +9,7 @@ export const createItemSchema = Joi.object({
     description: Joi.string().allow(null, '').optional(),
     category: Joi.string().valid("Купити", "Орендувати", "Комерційне").required(),
     subCategory: Joi.string().valid("Будинки", "Квартири", "Купити", "Орендувати").allow(null, "").optional(),
+    plotCategory: Joi.string().valid("Cільськогосподарське призначення", "Житлова та громадська забудова", "Природно-заповіднє та інше природоохоронне призначення", "Оздоровче призначення", "Рекреаційне призначення", " Історико-культурне призначення", "Лісогосподарське призначення", "Водний фонд", "Промисловость, транспорт, звʼязок, енергетика, оборона та інше призначення").allow(null, "").optional(),
     height: Joi.string().optional(),
     floor: Joi.string().optional(),
     rooms: Joi.number().positive().optional(),
@@ -37,13 +38,19 @@ const itemSchema = new mongoose.Schema({
     category: {
         type: String,
         required: true,
-        enum: ["Купити", "Орендувати", "Комерційне"]
+        enum: ["Купити", "Орендувати", "Комерційне", "Земельна ділянка"]
     },
     subCategory: {
         type: String,
         required: false,
         default: null,
-        enum: ["Будинки", "Квартири", "Купити", "Орендувати", "", null]
+        enum: ["Будинки", "Квартири", "Купити", "Орендувати", "Земельна ділянка", "", null]
+    },
+    plotCategory: {
+        type: String,
+        required: false,
+        default: null,
+        enum: ["Cільськогосподарське призначення", "Житлова та громадська забудова", "Природно-заповіднє та інше природоохоронне призначення", "Оздоровче призначення", "Рекреаційне призначення", " Історико-культурне призначення", "Лісогосподарське призначення", "Водний фонд", "Промисловость, транспорт, звʼязок, енергетика, оборона та інше призначення", "", null]
     },
     rooms: {
         type: Number,
